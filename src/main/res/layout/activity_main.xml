@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="20dp"
+    android:background="#FFFFFF">
+
+    <!-- Título de la app -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Control Parental"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="40dp" />
+
+    <!-- Botón para activar permisos -->
+    <Button
+        android:id="@+id/btn_activar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Activar Administrador"
+        android:layout_marginBottom="20dp" />
+
+    <!-- Botón para bloquear la pantalla -->
+    <Button
+        android:id="@+id/btn_bloquear"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Bloquear Pantalla Ahora"
+        android:backgroundTint="#FF0000"
+        android:textColor="#FFFFFF" />
+
+</LinearLayout>
