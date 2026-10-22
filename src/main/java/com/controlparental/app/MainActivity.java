@@ -10,21 +10,56 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+// Importamos las librerías de Firebase
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+
 public class MainActivity extends Activity {
 
     private DevicePolicyManager devicePolicyManager;
     private ComponentName componentName;
+    private DatabaseReference databaseReference;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Inicializar el administrador de dispositivos
+        // 1. Configurar el bloqueo de pantalla
         devicePolicyManager = (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);
         componentName = new ComponentName(this, MyDeviceAdminReceiver.class);
 
-        // Configurar el botón de activar administrador
+        // 2. Configurar Firebase (El "oído" de la app)
+        // Esto se conecta a la base de datos en la nube
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        databaseReference = database.getReference("orden_de_bloqueo");
+
+        // 3. Escuchar cambios en la base de datos
+        databaseReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                // Aquí recibimos el mensaje desde tu celular
+                String orden = dataSnapshot.getValue(String.class);
+                
+                // Si la orden es "BLOQUEAR", ejecutamos el bloqueo
+                if ("BLOQUEAR".equals(orden)) {
+                    bloquearPantalla();
+                    // Reiniciamos la orden para que no se bloquee infinitamente
+                    databaseReference.setValue("ESPERANDO"); 
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError error) {
+                // Si hay error de conexión
+                Toast.makeText(MainActivity.this, "Error de conexión", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        // Botón para activar permisos (solo se usa la primera vez)
         Button btnActivar = findViewById(R.id.btn_activar);
         btnActivar.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -32,33 +67,17 @@ public class MainActivity extends Activity {
                 activarAdministrador();
             }
         });
-
-        // Configurar el botón de bloquear
-        Button btnBloquear = findViewById(R.id.btn_bloquear);
-        btnBloquear.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                bloquearPantalla();
-            }
-        });
     }
 
-    // Método para activar la app como administrador del dispositivo
     private void activarAdministrador() {
         Intent intent = new Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN);
         intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, componentName);
-        intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION,
-                "Necesito permisos de administrador para bloquear la pantalla remotamente.");
         startActivityForResult(intent, 1);
     }
 
-    // Método para bloquear la pantalla
     private void bloquearPantalla() {
         if (devicePolicyManager.isAdminActive(componentName)) {
-            devicePolicyManager.lockNow();
-            Toast.makeText(this, "Pantalla bloqueada", Toast.LENGTH_SHORT).show();
-        } else {
-            Toast.makeText(this, "Primero activa el administrador", Toast.LENGTH_SHORT).show();
+            devicePolicyManager.lockNow(); // ¡Aquí ocurre la magia del bloqueo!
         }
     }
 }
