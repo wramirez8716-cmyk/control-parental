@@ -1,83 +1,79 @@
 package com.controlparental.app;
 
 import android.app.Activity;
-import android.app.admin.DevicePolicyManager;
-import android.content.ComponentName;
-import android.content.Context;
+import android.app.AlertDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
-// Importamos las librerías de Firebase
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-
 public class MainActivity extends Activity {
 
-    private DevicePolicyManager devicePolicyManager;
-    private ComponentName componentName;
-    private DatabaseReference databaseReference;
+    private SharedPreferences prefs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // 1. Configurar el bloqueo de pantalla
-        devicePolicyManager = (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);
-        componentName = new ComponentName(this, MyDeviceAdminReceiver.class);
+        prefs = getSharedPreferences("ControlParental", MODE_PRIVATE);
 
-        // 2. Configurar Firebase (El "oído" de la app)
-        // Esto se conecta a la base de datos en la nube
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        databaseReference = database.getReference("orden_de_bloqueo");
-
-        // 3. Escuchar cambios en la base de datos
-        databaseReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                // Aquí recibimos el mensaje desde tu celular
-                String orden = dataSnapshot.getValue(String.class);
-                
-                // Si la orden es "BLOQUEAR", ejecutamos el bloqueo
-                if ("BLOQUEAR".equals(orden)) {
-                    bloquearPantalla();
-                    // Reiniciamos la orden para que no se bloquee infinitamente
-                    databaseReference.setValue("ESPERANDO"); 
-                }
+        // Verificar si ya se eligió un rol antes
+        String rol = prefs.getString("rol", "");
+        if (!rol.isEmpty()) {
+            // Ya tiene rol guardado, ir directo a esa pantalla
+            if (rol.equals("padre")) {
+                iniciarPantallaPadre();
+            } else if (rol.equals("hijo")) {
+                iniciarPantallaHijo();
             }
+            return; // Salir del onCreate para no mostrar la pantalla de selección
+        }
 
-            @Override
-            public void onCancelled(DatabaseError error) {
-                // Si hay error de conexión
-                Toast.makeText(MainActivity.this, "Error de conexión", Toast.LENGTH_SHORT).show();
-            }
-        });
+        // Configurar botones de selección
+        Button btnPadre = findViewById(R.id.btn_padre);
+        Button btnHijo = findViewById(R.id.btn_hijo);
 
-        // Botón para activar permisos (solo se usa la primera vez)
-        Button btnActivar = findViewById(R.id.btn_activar);
-        btnActivar.setOnClickListener(new View.OnClickListener() {
+        btnPadre.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                activarAdministrador();
+                // Guardar rol como padre
+                prefs.edit().putString("rol", "padre").apply();
+                Toast.makeText(MainActivity.this, "Configurado como Padre", Toast.LENGTH_SHORT).show();
+                iniciarPantallaPadre();
+            }
+        });
+
+        btnHijo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Guardar rol como hijo
+                prefs.edit().putString("rol", "hijo").apply();
+                Toast.makeText(MainActivity.this, "Configurado como Hijo", Toast.LENGTH_SHORT).show();
+                iniciarPantallaHijo();
             }
         });
     }
 
-    private void activarAdministrador() {
-        Intent intent = new Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN);
-        intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, componentName);
-        startActivityForResult(intent, 1);
+    private void iniciarPantallaPadre() {
+        // Por ahora solo mostramos un mensaje
+        // Después aquí irá la pantalla del padre con lista de hijos
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("👨 Modo Padre");
+        builder.setMessage("Bienvenido. Aquí verás la actividad de tus hijos en tiempo real.\n\n(Próximamente: lista de hijos conectados)");
+        builder.setPositiveButton("OK", null);
+        builder.show();
     }
 
-    private void bloquearPantalla() {
-        if (devicePolicyManager.isAdminActive(componentName)) {
-            devicePolicyManager.lockNow(); // ¡Aquí ocurre la magia del bloqueo!
-        }
+    private void iniciarPantallaHijo() {
+        // Por ahora solo mostramos un mensaje
+        // Después aquí irá la pantalla del hijo con monitoreo
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("👦 Modo Hijo");
+        builder.setMessage("Tu actividad está siendo monitoreada por tu padre/madre.\n\n(Próximamente: envío de datos en tiempo real)");
+        builder.setPositiveButton("OK", null);
+        builder.show();
     }
 }
