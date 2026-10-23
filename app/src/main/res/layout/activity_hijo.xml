@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="30dp"
+    android:background="#E3F2FD">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="👦"
+        android:textSize="80sp"
+        android:layout_marginBottom="20dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Modo Hijo"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        android:textColor="#1565C0"
+        android:layout_marginBottom="10dp" />
+
+    <TextView
+        android:id="@+id/tv_estado_monitoreo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="⚠️ Permiso requerido:\nToca el botón y activa 'Control Parental'"
+        android:textSize="16sp"
+        android:textColor="#D32F2F"
+        android:gravity="center"
+        android:layout_marginBottom="30dp" />
+
+    <Button
+        android:id="@+id/btn_permiso_uso"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:text="Activar Permiso de Uso"
+        android:textSize="16sp"
+        android:backgroundTint="#1565C0"
+        android:textColor="#FFFFFF"
+        android:layout_marginBottom="20dp" />
+
+    <Button
+        android:id="@+id/btn_cambiar_rol"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Cambiar a Modo Padre"
+        android:backgroundTint="#9E9E9E"
+        android:textColor="#FFFFFF" />
+
+</LinearLayout>
