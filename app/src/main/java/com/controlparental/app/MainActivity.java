@@ -28,6 +28,11 @@ public class MainActivity extends Activity {
             finish(); // Cierra esta pantalla de selección
             return;
         } else if ("hijo".equals(rolGuardado)) {
+            Intent intent = new Intent(MainActivity.this, HijoActivity.class);
+            startActivity(intent);
+            finish();
+            return;
+        }
             // Si ya es hijo (por ahora solo mostramos un mensaje)
             Toast.makeText(this, "Modo Hijo activo (En construcción)", Toast.LENGTH_LONG).show();
             finish();
