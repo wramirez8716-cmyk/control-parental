@@ -17,12 +17,11 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    # ESTE ES EL PASO MÁGICO QUE FALTABA
-    - name: Dar permisos de ejecución
-      run: chmod +x gradlew
-    
     - name: Build with Gradle
-      run: ./gradlew assembleDebug
+      uses: gradle/gradle-build-action@v2
+      with:
+        gradle-version: 8.0
+        arguments: assembleDebug
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
