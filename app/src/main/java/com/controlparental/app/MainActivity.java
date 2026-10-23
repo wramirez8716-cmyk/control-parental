@@ -1,11 +1,9 @@
 package com.controlparental.app;
 
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -13,7 +11,6 @@ import android.widget.Toast;
 public class MainActivity extends Activity {
 
     private SharedPreferences prefs;
-    private static final String TAG = "ControlParental";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -21,23 +18,23 @@ public class MainActivity extends Activity {
         
         prefs = getSharedPreferences("ControlParental", MODE_PRIVATE);
         
-        // DEBUG: Ver qué rol está guardado
-        String rolGuardado = prefs.getString("rol", "null");
-        Log.d(TAG, "Rol guardado en SharedPreferences: " + rolGuardado);
-
         // 1. Verificar si ya se eligió un rol antes
-        if (!"null".equals(rolGuardado) && !rolGuardado.isEmpty()) {
-            Log.d(TAG, "Cargando pantalla para: " + rolGuardado);
-            if (rolGuardado.equals("padre")) {
-                mostrarPanelPadre();
-            } else if (rolGuardado.equals("hijo")) {
-                mostrarPanelHijo();
-            }
-            return; // Salir del onCreate
+        String rolGuardado = prefs.getString("rol", "");
+        
+        if ("padre".equals(rolGuardado)) {
+            // Si ya es padre, ir directo a la pantalla del padre
+            Intent intent = new Intent(MainActivity.this, PadreActivity.class);
+            startActivity(intent);
+            finish(); // Cierra esta pantalla de selección
+            return;
+        } else if ("hijo".equals(rolGuardado)) {
+            // Si ya es hijo (por ahora solo mostramos un mensaje)
+            Toast.makeText(this, "Modo Hijo activo (En construcción)", Toast.LENGTH_LONG).show();
+            finish();
+            return;
         }
 
         // 2. Si no hay rol guardado, mostrar la pantalla de selección
-        Log.d(TAG, "Mostrando pantalla de selección de rol");
         setContentView(R.layout.activity_main);
 
         Button btnPadre = findViewById(R.id.btn_padre);
@@ -46,67 +43,25 @@ public class MainActivity extends Activity {
         btnPadre.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d(TAG, "Usuario seleccionó: PADRE");
-                SharedPreferences.Editor editor = prefs.edit();
-                editor.putString("rol", "padre");
-                boolean guardado = editor.commit(); // Usar commit() en lugar de apply()
-                Log.d(TAG, "¿Se guardó correctamente? " + guardado);
+                // Guardar rol
+                prefs.edit().putString("rol", "padre").apply();
+                Toast.makeText(MainActivity.this, "Modo Padre activado", Toast.LENGTH_SHORT).show();
                 
-                Toast.makeText(MainActivity.this, "Configurado como Padre", Toast.LENGTH_SHORT).show();
-                mostrarDialogoYReiniciar("padre");
+                // Ir a la pantalla del padre
+                Intent intent = new Intent(MainActivity.this, PadreActivity.class);
+                startActivity(intent);
+                finish();
             }
         });
 
         btnHijo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d(TAG, "Usuario seleccionó: HIJO");
-                SharedPreferences.Editor editor = prefs.edit();
-                editor.putString("rol", "hijo");
-                boolean guardado = editor.commit();
-                Log.d(TAG, "¿Se guardó correctamente? " + guardado);
-                
-                Toast.makeText(MainActivity.this, "Configurado como Hijo", Toast.LENGTH_SHORT).show();
-                mostrarDialogoYReiniciar("hijo");
+                // Guardar rol
+                prefs.edit().putString("rol", "hijo").apply();
+                Toast.makeText(MainActivity.this, "Modo Hijo activado (En construcción)", Toast.LENGTH_SHORT).show();
+                finish();
             }
         });
-    }
-
-    private void mostrarDialogoYReiniciar(final String rol) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        if (rol.equals("padre")) {
-            builder.setTitle("👨 Modo Padre");
-            builder.setMessage("Bienvenido. Aquí verás la actividad de tus hijos en tiempo real.\n\nLa app se reiniciará para cargar tu panel.");
-        } else {
-            builder.setTitle("👦 Modo Hijo");
-            builder.setMessage("Tu actividad está siendo monitoreada por tu padre/madre.\n\nLa app se reiniciará para activar el monitoreo.");
-        }
-        
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                finish(); // Cierra esta actividad
-            }
-        });
-        builder.setCancelable(false);
-        builder.show();
-    }
-
-    private void mostrarPanelPadre() {
-        // Por ahora mostramos un mensaje simple
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(" Panel del Padre");
-        builder.setMessage("¡Bienvenido Padre!\n\nAquí se mostrará:\n- Lista de hijos conectados\n- App que están usando ahora\n- Tiempo de uso\n- Controles de bloqueo\n\n(Próximamente)");
-        builder.setPositiveButton("OK", null);
-        builder.show();
-    }
-
-    private void mostrarPanelHijo() {
-        // Por ahora mostramos un mensaje simple
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("👦 Modo Hijo Activo");
-        builder.setMessage("Tu actividad está siendo monitoreada.\n\nDetectando apps en uso...\n(Próximamente)");
-        builder.setPositiveButton("OK", null);
-        builder.show();
     }
 }
