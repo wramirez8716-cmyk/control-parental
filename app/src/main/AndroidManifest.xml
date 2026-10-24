@@ -1,19 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    package="com.controlparental.app">
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-   <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" />
 
-    <!-- Permiso para usar Internet (necesario para Firebase) -->
-    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Permisos necesarios para el monitoreo y servicio en segundo plano -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" />
 
     <application
-    android:allowBackup="true"
-    android:label="Control Parental"
-    android:icon="@mipmap/ic_launcher"
-    android:theme="@style/AppTheme">
+        android:allowBackup="true"
+        android:label="Control Parental"
+        android:icon="@mipmap/ic_launcher"
+        android:theme="@style/AppTheme">
 
-        <!-- Pantalla principal de la app -->
+        <!-- Pantalla Principal (Selección de rol) -->
         <activity android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
@@ -22,7 +21,18 @@
             </intent-filter>
         </activity>
 
-        <!-- El "vigilante" que bloquea la pantalla -->
+        <!-- Pantalla del Padre -->
+        <activity android:name=".PadreActivity" />
+
+        <!-- Pantalla del Hijo -->
+        <activity android:name=".HijoActivity" />
+
+        <!-- Servicio de Monitoreo (Configurado para Android 14 / Xiaomi) -->
+        <service 
+            android:name=".ServicioMonitoreo" 
+            android:foregroundServiceType="specialUse" />
+
+        <!-- Receptor para bloquear la pantalla (Administrador de dispositivo) -->
         <receiver
             android:name=".MyDeviceAdminReceiver"
             android:permission="android.permission.BIND_DEVICE_ADMIN"
@@ -34,10 +44,6 @@
                 <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
             </intent-filter>
         </receiver>
-        
-.            <activity android:name=".PadreActivity" />
-             <activity android:name=".HijoActivity" />
-<service android:name=".ServicioMonitoreo" />
 
     </application>
 </manifest>
