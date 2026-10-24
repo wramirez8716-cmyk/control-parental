@@ -1,84 +1,82 @@
-package com.controlparental.app;
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="20dp"
+    android:background="#F5F5F5"
+    android:gravity="center_horizontal">
 
-import android.app.Activity;
-import android.content.SharedPreferences;
-import android.os.Bundle;
-import android.view.View;
-import android.widget.Button;
-import android.widget.TextView;
-import android.widget.Toast;
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Panel del Padre"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="30dp" />
 
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="#E3F2FD"
+        android:padding="20dp"
+        android:gravity="center"
+        android:layout_marginBottom="20dp">
 
-public class PadreActivity extends Activity {
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tu Código de Familia:"
+            android:textSize="16sp" />
 
-    private TextView tvAppActiva, tvTiempoUso;
-    private Button btnBloquear, btnCambiarRol;
-    private DatabaseReference databaseReference;
+        <TextView
+            android:id="@+id/tv_codigo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="------"
+            android:textSize="40sp"
+            android:textStyle="bold"
+            android:textColor="#1565C0"
+            android:layout_margin="10dp" />
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_padre);
+        <Button
+            android:id="@+id/btn_generar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Generar Código"
+            android:backgroundTint="#1565C0" />
+    </LinearLayout>
 
-        tvAppActiva = findViewById(R.id.tv_app_activa);
-        tvTiempoUso = findViewById(R.id.tv_tiempo_uso);
-        btnBloquear = findViewById(R.id.btn_bloquear);
-        btnCambiarRol = findViewById(R.id.btn_cambiar_rol);
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#FFFFFF"
+        android:padding="20dp"
+        android:layout_marginBottom="20dp">
 
-        // Conectar a Firebase (usamos una ruta de prueba por ahora)
-        databaseReference = FirebaseDatabase.getInstance().getReference("hijos/tablet_prueba");
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="App activa en tablet: "
+            android:textSize="16sp" />
 
-        // Escuchar cambios en tiempo real
-        databaseReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                // Leer la app activa
-                String app = dataSnapshot.child("app_activa").getValue(String.class);
-                if (app != null) {
-                    tvAppActiva.setText(app);
-                } else {
-                    tvAppActiva.setText("Ninguna (Pantalla de inicio)");
-                }
+        <TextView
+            android:id="@+id/tv_app_activa"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Esperando..."
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="#4CAF50"
+            android:layout_marginLeft="10dp" />
+    </LinearLayout>
 
-                // Leer el tiempo de uso (por ahora un valor de prueba)
-                Long tiempo = dataSnapshot.child("tiempo_minutos").getValue(Long.class);
-                if (tiempo != null) {
-                    tvTiempoUso.setText(tiempo + " minutos");
-                } else {
-                    tvTiempoUso.setText("0 minutos");
-                }
-            }
+    <Button
+        android:id="@+id/btn_salir"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Cerrar Sesión"
+        android:backgroundTint="#9E9E9E" />
 
-            @Override
-            public void onCancelled(DatabaseError error) {
-                Toast.makeText(PadreActivity.this, "Error de conexión", Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        // Acción del botón bloquear
-        btnBloquear.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Escribimos la orden en Firebase
-                FirebaseDatabase.getInstance().getReference("ordenes/tablet_prueba")
-                        .setValue("BLOQUEAR");
-                Toast.makeText(PadreActivity.this, "Orden de bloqueo enviada", Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        // Acción para cambiar de rol (borra los datos guardados)
-        btnCambiarRol.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                SharedPreferences prefs = getSharedPreferences("ControlParental", MODE_PRIVATE);
-                prefs.edit().clear().apply();
-                finish(); // Cierra y vuelve a la selección
-            }
-        });
-    }
-}
+</LinearLayout>
