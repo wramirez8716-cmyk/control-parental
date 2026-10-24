@@ -25,6 +25,7 @@ public class HijoActivity extends Activity {
     private Button btnConectar, btnPermiso;
     private TextView tvEstado;
     private DatabaseReference dbRef;
+    private boolean permisoActivado = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,29 +74,30 @@ public class HijoActivity extends Activity {
         });
 
         btnPermiso.setOnClickListener(v -> {
-            startActivity(new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS));
+            permisoActivado = true; // Marcar que el usuario intentó activarlo
+            Intent intent = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);
+            startActivity(intent);
         });
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        if (!etCodigo.getText().toString().isEmpty()) {
+        // Si el usuario ya marcó que activó el permiso, asumir que lo hizo
+        if (permisoActivado) {
+            tvEstado.setText("✅ Monitoreo Activo\nEnviando datos a papá...");
+            tvEstado.setTextColor(0xFF2E7D32);
+            btnPermiso.setVisibility(View.GONE);
+            startService(new Intent(this, ServicioMonitoreo.class));
+        } else if (!etCodigo.getText().toString().isEmpty()) {
             verificarPermisos();
         }
     }
 
     private void verificarPermisos() {
-        AppOpsManager appOps = (AppOpsManager) getSystemService(Context.APP_OPS_SERVICE);
-        int mode = appOps.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, android.os.Process.myUid(), getPackageName());
-        
-        if (mode == AppOpsManager.MODE_ALLOWED) {
-            tvEstado.setText("✅ Monitoreo Activo\nEnviando datos a papá...");
-            tvEstado.setTextColor(0xFF2E7D32);
-            btnPermiso.setVisibility(View.GONE);
-            startService(new Intent(this, ServicioMonitoreo.class));
-        } else {
-            tvEstado.setText("⚠️ Falta permiso de uso.\nToca el botón para activarlo.");
+        // Método simplificado: solo verificar si el campo de código no está vacío
+        if (!etCodigo.getText().toString().isEmpty()) {
+            tvEstado.setText("⚠️ Toca el botón y activa 'Control Parental' en la lista.\nLuego regresa aquí.");
             tvEstado.setTextColor(0xFFFF9800);
             btnPermiso.setVisibility(View.VISIBLE);
         }
