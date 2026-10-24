@@ -40,15 +40,8 @@
         android:text="Activar Permiso de Uso"
         android:textSize="16sp"
         android:backgroundTint="#1565C0"
-        android:textColor="#FFFFFF"
-        android:layout_marginBottom="20dp" />
-
-    <Button
-        android:id="@+id/btn_cambiar_rol"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Cambiar a Modo Padre"
-        android:backgroundTint="#9E9E9E"
         android:textColor="#FFFFFF" />
+
+    <!-- El botón de cambiar rol fue eliminado por seguridad -->
 
 </LinearLayout>
