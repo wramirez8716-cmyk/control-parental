@@ -14,7 +14,43 @@
         android:textStyle="bold"
         android:textColor="#333333"
         android:gravity="center"
-        android:layout_marginBottom="30dp" />
+        android:layout_marginBottom="20dp" />
+
+    <!-- Caja para el Código de Familia -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="#E3F2FD"
+        android:padding="15dp"
+        android:layout_marginBottom="20dp"
+        android:gravity="center">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Código de Familia:"
+            android:textSize="14sp"
+            android:textColor="#555" />
+
+        <TextView
+            android:id="@+id/tv_codigo_familia"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Genera un código..."
+            android:textSize="32sp"
+            android:textStyle="bold"
+            android:textColor="#1565C0"
+            android:layout_marginTop="5dp" />
+
+        <Button
+            android:id="@+id/btn_generar_codigo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Generar Nuevo Código"
+            android:layout_marginTop="10dp"
+            android:backgroundTint="#1565C0" />
+    </LinearLayout>
 
     <!-- Tarjeta de información del hijo -->
     <LinearLayout
@@ -29,7 +65,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Dispositivo: Tablet Principal"
+            android:text="Estado del Dispositivo"
             android:textSize="16sp"
             android:textStyle="bold"
             android:layout_marginBottom="15dp" />
@@ -45,41 +81,12 @@
             android:id="@+id/tv_app_activa"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Esperando datos..."
+            android:text="Esperando conexión..."
             android:textSize="20sp"
             android:textStyle="bold"
             android:textColor="#2196F3"
             android:layout_marginBottom="15dp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Tiempo de uso hoy:"
-            android:textSize="14sp"
-            android:textColor="#666666" />
-
-        <TextView
-            android:id="@+id/tv_tiempo_uso"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="0 min"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:textColor="#4CAF50" />
-
     </LinearLayout>
-
-    <!-- Botones de control -->
-    <Button
-        android:id="@+id/btn_bloquear"
-        android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:text="BLOQUEAR DISPOSITIVO"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        android:backgroundTint="#F44336"
-        android:textColor="#FFFFFF"
-        android:layout_marginBottom="10dp" />
 
     <Button
         android:id="@+id/btn_cambiar_rol"
