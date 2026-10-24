@@ -23,25 +23,69 @@
         android:textColor="#1565C0"
         android:layout_marginBottom="10dp" />
 
-    <TextView
-        android:id="@+id/tv_estado_monitoreo"
+    <!-- Campo para ingresar código -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="⚠️ Permiso requerido:\nToca el botón y activa 'Control Parental'"
-        android:textSize="16sp"
-        android:textColor="#D32F2F"
+        android:orientation="vertical"
+        android:background="#FFFFFF"
+        android:padding="20dp"
+        android:layout_marginBottom="20dp"
+        android:elevation="2dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Código de Familia:"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="#333"
+            android:layout_marginBottom="10dp" />
+
+        <EditText
+            android:id="@+id/et_codigo_familia"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:hint="Ej: A7X9B2"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textAlignment="center"
+            android:inputType="textCapCharacters"
+            android:maxLength="6"
+            android:background="#F5F5F5"
+            android:padding="10dp"
+            android:layout_marginBottom="10dp" />
+
+        <Button
+            android:id="@+id/btn_conectar"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:text="CONECTAR"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:backgroundTint="#1565C0"
+            android:textColor="#FFFFFF" />
+    </LinearLayout>
+
+    <!-- Estado de permisos -->
+    <TextView
+        android:id="@+id/tv_estado_permisos"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="⚠️ Configurando permisos..."
+        android:textSize="14sp"
+        android:textColor="#FF9800"
         android:gravity="center"
-        android:layout_marginBottom="30dp" />
+        android:layout_marginBottom="20dp" />
 
     <Button
-        android:id="@+id/btn_permiso_uso"
+        android:id="@+id/btn_permisos"
         android:layout_width="match_parent"
         android:layout_height="60dp"
-        android:text="Activar Permiso de Uso"
+        android:text="Activar Permisos"
         android:textSize="16sp"
-        android:backgroundTint="#1565C0"
-        android:textColor="#FFFFFF" />
-
-    <!-- El botón de cambiar rol fue eliminado por seguridad -->
+        android:backgroundTint="#4CAF50"
+        android:textColor="#FFFFFF"
+        android:visibility="gone" />
 
 </LinearLayout>
