@@ -28,26 +28,26 @@ public class HijoActivity extends Activity {
         componentName = new ComponentName(this, MyDeviceAdminReceiver.class);
 
         TextView tvEstado = findViewById(R.id.tv_estado_monitoreo);
-        Button btnPermiso = findViewById(R.id.btn_permiso_uso);
+        Button btnAccion = findViewById(R.id.btn_permiso_uso);
 
-        verificarPermisos(tvEstado, btnPermiso);
-
-        btnPermiso.setOnClickListener(new View.OnClickListener() {
+        // Configurar el botón UNA SOLA VEZ con lógica inteligente
+        btnAccion.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Abrir la pantalla de Accesibilidad para que el usuario active el servicio
-                Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
-                startActivity(intent);
+                manejarSiguientePaso();
             }
         });
+
+        // Verificar estado inicial
+        actualizarEstado(tvEstado, btnAccion);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         TextView tvEstado = findViewById(R.id.tv_estado_monitoreo);
-        Button btnPermiso = findViewById(R.id.btn_permiso_uso);
-        verificarPermisos(tvEstado, btnPermiso);
+        Button btnAccion = findViewById(R.id.btn_permiso_uso);
+        actualizarEstado(tvEstado, btnAccion);
     }
 
     @Override
@@ -55,46 +55,75 @@ public class HijoActivity extends Activity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_CODE_ENABLE_ADMIN) {
             TextView tvEstado = findViewById(R.id.tv_estado_monitoreo);
-            Button btnPermiso = findViewById(R.id.btn_permiso_uso);
-            verificarPermisos(tvEstado, btnPermiso);
+            Button btnAccion = findViewById(R.id.btn_permiso_uso);
+            actualizarEstado(tvEstado, btnAccion);
         }
     }
 
-    private void verificarPermisos(TextView tvEstado, Button btnPermiso) {
+    private void manejarSiguientePaso() {
+        boolean tieneUso = tienePermisoDeUso();
+        boolean esAdmin = devicePolicyManager.isAdminActive(componentName);
+        boolean esAccesibilidad = esServicioAccesibilidadActivo();
+
+        if (!tieneUso) {
+            // Paso 1: Pedir permiso de uso
+            Intent intent = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);
+            startActivity(intent);
+        } else if (!esAdmin) {
+            // Paso 2: Activar administrador
+            Intent intent = new Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN);
+            intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, componentName);
+            intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, 
+                "Necesario para bloquear la pantalla si intentan desinstalar la app.");
+            startActivityForResult(intent, REQUEST_CODE_ENABLE_ADMIN);
+        } else if (!esAccesibilidad) {
+            // Paso 3: Activar accesibilidad
+            Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
+            startActivity(intent);
+        }
+    }
+
+    private void actualizarEstado(TextView tvEstado, Button btnAccion) {
         boolean tieneUso = tienePermisoDeUso();
         boolean esAdmin = devicePolicyManager.isAdminActive(componentName);
         boolean esAccesibilidad = esServicioAccesibilidadActivo();
 
         if (tieneUso && esAdmin && esAccesibilidad) {
+            // TODO COMPLETO
             tvEstado.setText("✅ PROTECCIÓN TOTAL ACTIVADA\nMonitoreo, Anti-desinstalación y Bloqueo de Ajustes activos.");
             tvEstado.setTextColor(0xFF2E7D32); // Verde
-            btnPermiso.setText("Sistema 100% Protegido");
-            btnPermiso.setEnabled(false);
-            btnPermiso.setBackgroundColor(0xFF9E9E9E); 
+            btnAccion.setText("Sistema 100% Protegido");
+            btnAccion.setEnabled(false);
+            btnAccion.setBackgroundColor(0xFF9E9E9E);
             iniciarServicio();
-        } else {
-            tvEstado.setText("⚠️ Protección incompleta.\nToca el botón y activa 'Control Parental' en Accesibilidad.");
+        } else if (!tieneUso) {
+            // Falta permiso de uso
+            tvEstado.setText("⚠️ Paso 1 de 3:\nActiva el permiso de 'Acceso a datos de uso'");
             tvEstado.setTextColor(0xFFFF9800); // Naranja
-            btnPermiso.setText("Activar Protección de Accesibilidad");
-            btnPermiso.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    // Primero activamos admin si no lo está
-                    if (!esAdmin) {
-                        activarAdministrador();
-                    } else {
-                        // Luego pedimos accesibilidad
-                        Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
-                        startActivity(intent);
-                    }
-                }
-            });
+            btnAccion.setText("ACTIVAR PERMISO DE USO");
+            btnAccion.setEnabled(true);
+            btnAccion.setBackgroundColor(0xFF1565C0);
+        } else if (!esAdmin) {
+            // Falta admin
+            tvEstado.setText("⚠️ Paso 2 de 3:\nActiva el permiso de Administrador");
+            tvEstado.setTextColor(0xFFFF9800);
+            btnAccion.setText("ACTIVAR ADMINISTRADOR");
+            btnAccion.setEnabled(true);
+            btnAccion.setBackgroundColor(0xFF1565C0);
+        } else if (!esAccesibilidad) {
+            // Falta accesibilidad
+            tvEstado.setText("⚠️ Paso 3 de 3:\nActiva 'Control Parental' en Accesibilidad");
+            tvEstado.setTextColor(0xFFFF9800);
+            btnAccion.setText("ACTIVAR ACCESIBILIDAD");
+            btnAccion.setEnabled(true);
+            btnAccion.setBackgroundColor(0xFF1565C0);
         }
     }
 
     private boolean tienePermisoDeUso() {
         AppOpsManager appOps = (AppOpsManager) getSystemService(Context.APP_OPS_SERVICE);
-        int mode = appOps.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, android.os.Process.myUid(), getPackageName());
+        int mode = appOps.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, 
+            android.os.Process.myUid(), getPackageName());
         return mode == AppOpsManager.MODE_ALLOWED;
     }
 
@@ -102,28 +131,21 @@ public class HijoActivity extends Activity {
         int accessibilityEnabled = 0;
         try {
             accessibilityEnabled = Settings.Secure.getInt(
-                    getContentResolver(),
-                    Settings.Secure.ACCESSIBILITY_ENABLED);
+                getContentResolver(),
+                Settings.Secure.ACCESSIBILITY_ENABLED);
         } catch (Settings.SettingNotFoundException e) {
             e.printStackTrace();
         }
 
         if (accessibilityEnabled == 1) {
             String settingValue = Settings.Secure.getString(
-                    getContentResolver(),
-                    Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
+                getContentResolver(),
+                Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
             if (settingValue != null) {
                 return settingValue.contains(getPackageName() + "/com.controlparental.app.AntiUninstallAccessibilityService");
             }
         }
         return false;
-    }
-
-    private void activarAdministrador() {
-        Intent intent = new Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN);
-        intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, componentName);
-        intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "Necesario para bloquear la pantalla si intentan desinstalar la app.");
-        startActivityForResult(intent, REQUEST_CODE_ENABLE_ADMIN);
     }
 
     private void iniciarServicio() {
