@@ -1,7 +1,6 @@
 package com.controlparental.app;
 
 import android.app.Activity;
-import android.app.ActivityManager;
 import android.app.AppOpsManager;
 import android.app.admin.DevicePolicyManager;
 import android.content.ComponentName;
@@ -13,7 +12,6 @@ import android.provider.Settings;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 public class HijoActivity extends Activity {
 
@@ -31,25 +29,14 @@ public class HijoActivity extends Activity {
 
         TextView tvEstado = findViewById(R.id.tv_estado_monitoreo);
         Button btnPermiso = findViewById(R.id.btn_permiso_uso);
-        Button btnCambiarRol = findViewById(R.id.btn_cambiar_rol);
 
         verificarPermisos(tvEstado, btnPermiso);
 
         btnPermiso.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // 1. Primero pedimos permiso de uso
                 Intent intent = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);
                 startActivity(intent);
-            }
-        });
-
-        btnCambiarRol.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                SharedPreferences prefs = getSharedPreferences("ControlParental", MODE_PRIVATE);
-                prefs.edit().clear().apply();
-                finish();
             }
         });
     }
@@ -58,7 +45,8 @@ public class HijoActivity extends Activity {
     protected void onResume() {
         super.onResume();
         TextView tvEstado = findViewById(R.id.tv_estado_monitoreo);
-        verificarPermisos(tvEstado, findViewById(R.id.btn_permiso_uso));
+        Button btnPermiso = findViewById(R.id.btn_permiso_uso);
+        verificarPermisos(tvEstado, btnPermiso);
     }
 
     @Override
@@ -66,7 +54,8 @@ public class HijoActivity extends Activity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_CODE_ENABLE_ADMIN) {
             TextView tvEstado = findViewById(R.id.tv_estado_monitoreo);
-            verificarPermisos(tvEstado, findViewById(R.id.btn_permiso_uso));
+            Button btnPermiso = findViewById(R.id.btn_permiso_uso);
+            verificarPermisos(tvEstado, btnPermiso);
         }
     }
 
@@ -76,14 +65,14 @@ public class HijoActivity extends Activity {
 
         if (tieneUso && esAdmin) {
             tvEstado.setText("✅ PROTECCIÓN ACTIVA\nMonitoreo y Anti-desinstalación activados.");
-            tvEstado.setTextColor(0xFF2E7D32); // Verde
-            btnPermiso.setText("Permisos Completos");
+            tvEstado.setTextColor(0xFF2E7D32); 
+            btnPermiso.setText("Sistema Protegido");
             btnPermiso.setEnabled(false);
-            btnPermiso.setBackgroundColor(0xFF9E9E9E); // Gris
+            btnPermiso.setBackgroundColor(0xFF9E9E9E); 
             iniciarServicio();
         } else if (tieneUso && !esAdmin) {
             tvEstado.setText("⚠️ Falta permiso de Administrador.\nToca el botón para activar la protección anti-desinstalación.");
-            tvEstado.setTextColor(0xFFFF9800); // Naranja
+            tvEstado.setTextColor(0xFFFF9800); 
             btnPermiso.setText("Activar Protección Admin");
             btnPermiso.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -91,6 +80,12 @@ public class HijoActivity extends Activity {
                     activarAdministrador();
                 }
             });
+        } else {
+            tvEstado.setText("⚠️ Permiso requerido:\nToca el botón y activa 'Control Parental'");
+            tvEstado.setTextColor(0xFFD32F2F);
+            btnPermiso.setText("Activar Permiso de Uso");
+            btnPermiso.setEnabled(true);
+            btnPermiso.setBackgroundColor(0xFF1565C0);
         }
     }
 
@@ -103,7 +98,7 @@ public class HijoActivity extends Activity {
     private void activarAdministrador() {
         Intent intent = new Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN);
         intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, componentName);
-        intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "Esta protección evita que la app sea desinstalada accidentalmente.");
+        intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "Esta protección evita que la app sea desinstalada.");
         startActivityForResult(intent, REQUEST_CODE_ENABLE_ADMIN);
     }
 
