@@ -31,30 +31,42 @@ public class ServicioMonitoreo extends Service {
         packageManager = getPackageManager();
         databaseReference = FirebaseDatabase.getInstance().getReference("hijos/tablet_prueba");
 
-        // Crear canal de notificación (Requerido en Android 8+)
+        // Crear canal de notificación
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel("MONITOREO", "Monitoreo", NotificationManager.IMPORTANCE_LOW);
             NotificationManager manager = getSystemService(NotificationManager.class);
-            manager.createNotificationChannel(channel);
+            if (manager != null) {
+                manager.createNotificationChannel(channel);
+            }
         }
 
-        // Notificación para que el sistema no mate el servicio en segundo plano
+        // Notificación para que el sistema no mate el servicio
         Notification notification = new Notification.Builder(this, "MONITOREO")
                 .setContentTitle("Control Parental Activo")
                 .setContentText("Protegiendo el dispositivo")
-                .setSmallIcon(android.R.drawable.ic_menu_view)
+                .setSmallIcon(android.R.drawable.ic_lock_lock)
+                .setOngoing(true)
                 .build();
-        startForeground(1, notification);
+                
+        try {
+            startForeground(1, notification);
+        } catch (Exception e) {
+            Log.e("ServicioMonitoreo", "Error al iniciar foreground: " + e.getMessage());
+        }
 
         runnable = new Runnable() {
             @Override
             public void run() {
-                String appActiva = obtenerAppEnPrimerPlano();
-                if (appActiva != null) {
-                    databaseReference.child("app_activa").setValue(appActiva);
-                    Log.d("ServicioMonitoreo", "App activa: " + appActiva);
+                try {
+                    String appActiva = obtenerAppEnPrimerPlano();
+                    if (appActiva != null) {
+                        databaseReference.child("app_activa").setValue(appActiva);
+                        Log.d("ServicioMonitoreo", "App activa: " + appActiva);
+                    }
+                } catch (Exception e) {
+                    Log.e("ServicioMonitoreo", "Error obteniendo app: " + e.getMessage());
                 }
-                // Repetir cada 5 segundos (5000 ms)
+                // Repetir cada 5 segundos
                 handler.postDelayed(this, 5000);
             }
         };
@@ -63,7 +75,7 @@ public class ServicioMonitoreo extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         handler.post(runnable);
-        return START_STICKY; // Intenta reiniciar si el sistema lo cierra
+        return START_STICKY;
     }
 
     @Override
@@ -79,7 +91,6 @@ public class ServicioMonitoreo extends Service {
 
     private String obtenerAppEnPrimerPlano() {
         long time = System.currentTimeMillis();
-        // Consultar eventos de los últimos 10 segundos
         UsageEvents usageEvents = usageStatsManager.queryEvents(time - 10000, time);
         UsageEvents.Event event = new UsageEvents.Event();
         String lastApp = "";
@@ -93,10 +104,9 @@ public class ServicioMonitoreo extends Service {
         
         if (!lastApp.isEmpty()) {
             try {
-                // Obtener el nombre legible (ej: "YouTube" en vez de "com.google.android.youtube")
                 return packageManager.getApplicationLabel(packageManager.getApplicationInfo(lastApp, 0)).toString();
             } catch (PackageManager.NameNotFoundException e) {
-                return lastApp; // Si falla, devuelve el nombre del paquete
+                return lastApp;
             }
         }
         return "Pantalla de inicio";
