@@ -38,5 +38,16 @@
             </intent-filter>
         </receiver>
 
+<!-- Receptor para detectar instalaciones de apps -->
+        <receiver 
+            android:name=".InstalacionReceiver" 
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.PACKAGE_ADDED" />
+                <action android:name="android.intent.action.PACKAGE_REPLACED" />
+                <data android:scheme="package" />
+            </intent-filter>
+        </receiver>
+        
     </application>
 </manifest>
