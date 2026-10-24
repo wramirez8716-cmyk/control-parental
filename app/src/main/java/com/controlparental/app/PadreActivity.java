@@ -1,82 +1,83 @@
-<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="20dp"
-    android:background="#F5F5F5"
-    android:gravity="center_horizontal">
+package com.controlparental.app;
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Panel del Padre"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="30dp" />
+import android.app.Activity;
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.widget.Button;
+import android.widget.TextView;
+import android.widget.Toast;
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:background="#E3F2FD"
-        android:padding="20dp"
-        android:gravity="center"
-        android:layout_marginBottom="20dp">
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Tu Código de Familia:"
-            android:textSize="16sp" />
+import java.util.Random;
 
-        <TextView
-            android:id="@+id/tv_codigo"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="------"
-            android:textSize="40sp"
-            android:textStyle="bold"
-            android:textColor="#1565C0"
-            android:layout_margin="10dp" />
+public class PadreActivity extends Activity {
 
-        <Button
-            android:id="@+id/btn_generar"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Generar Código"
-            android:backgroundTint="#1565C0" />
-    </LinearLayout>
+    private TextView tvCodigo, tvAppActiva;
+    private Button btnGenerar, btnSalir;
+    private DatabaseReference dbRef;
+    private String codigoActual = "";
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="#FFFFFF"
-        android:padding="20dp"
-        android:layout_marginBottom="20dp">
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_padre);
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="App activa en tablet: "
-            android:textSize="16sp" />
+        tvCodigo = findViewById(R.id.tv_codigo);
+        tvAppActiva = findViewById(R.id.tv_app_activa);
+        btnGenerar = findViewById(R.id.btn_generar);
+        btnSalir = findViewById(R.id.btn_salir);
+        dbRef = FirebaseDatabase.getInstance().getReference();
 
-        <TextView
-            android:id="@+id/tv_app_activa"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Esperando..."
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:textColor="#4CAF50"
-            android:layout_marginLeft="10dp" />
-    </LinearLayout>
+        SharedPreferences prefs = getSharedPreferences("ControlParental", MODE_PRIVATE);
+        codigoActual = prefs.getString("codigo_familia", "");
 
-    <Button
-        android:id="@+id/btn_salir"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Cerrar Sesión"
-        android:backgroundTint="#9E9E9E" />
+        if (!codigoActual.isEmpty()) {
+            tvCodigo.setText(codigoActual);
+            btnGenerar.setText("Código Activo");
+            btnGenerar.setEnabled(false);
+            escucharDatos();
+        }
 
-</LinearLayout>
+        btnGenerar.setOnClickListener(v -> {
+            String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            StringBuilder sb = new StringBuilder();
+            Random random = new Random();
+            for (int i = 0; i < 6; i++) sb.append(chars.charAt(random.nextInt(chars.length())));
+            
+            codigoActual = sb.toString();
+            
+            // Guardar en Firebase y Local
+            dbRef.child("codigos").child(codigoActual).setValue("activo");
+            prefs.edit().putString("codigo_familia", codigoActual).apply();
+
+            tvCodigo.setText(codigoActual);
+            btnGenerar.setText("Código Activo");
+            btnGenerar.setEnabled(false);
+            Toast.makeText(this, "Código generado: " + codigoActual, Toast.LENGTH_LONG).show();
+            escucharDatos();
+        });
+
+        btnSalir.setOnClickListener(v -> {
+            prefs.edit().clear().apply();
+            finish();
+        });
+    }
+
+    private void escucharDatos() {
+        dbRef.child("familias").child(codigoActual).child("app_activa")
+            .addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                String app = snapshot.getValue(String.class);
+                tvAppActiva.setText(app != null ? app : "En espera...");
+            }
+            @Override
+            public void onCancelled(DatabaseError error) {}
+        });
+    }
+}
