@@ -1,7 +1,10 @@
 package com.controlparental.app;
 
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.AppOpsManager;
+import android.app.admin.DevicePolicyManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -10,29 +13,32 @@ import android.provider.Settings;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class HijoActivity extends Activity {
+
+    private static final int REQUEST_CODE_ENABLE_ADMIN = 1;
+    private DevicePolicyManager devicePolicyManager;
+    private ComponentName componentName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_hijo);
 
+        devicePolicyManager = (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);
+        componentName = new ComponentName(this, MyDeviceAdminReceiver.class);
+
         TextView tvEstado = findViewById(R.id.tv_estado_monitoreo);
         Button btnPermiso = findViewById(R.id.btn_permiso_uso);
         Button btnCambiarRol = findViewById(R.id.btn_cambiar_rol);
 
-        // Verificar si ya tenemos el permiso
-        if (tienePermisoDeUso()) {
-            tvEstado.setText("✅ Monitoreo Activo\nEnviando datos a papá/mamá...");
-            tvEstado.setTextColor(0xFF2E7D32); // Verde
-            iniciarServicio();
-        }
+        verificarPermisos(tvEstado, btnPermiso);
 
         btnPermiso.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Abrir la pantalla de ajustes de Android para dar permiso
+                // 1. Primero pedimos permiso de uso
                 Intent intent = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);
                 startActivity(intent);
             }
@@ -43,7 +49,7 @@ public class HijoActivity extends Activity {
             public void onClick(View v) {
                 SharedPreferences prefs = getSharedPreferences("ControlParental", MODE_PRIVATE);
                 prefs.edit().clear().apply();
-                finish(); // Vuelve a la pantalla de selección
+                finish();
             }
         });
     }
@@ -51,12 +57,40 @@ public class HijoActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        // Revisar el permiso cada vez que la pantalla vuelve a estar visible
-        if (tienePermisoDeUso()) {
+        TextView tvEstado = findViewById(R.id.tv_estado_monitoreo);
+        verificarPermisos(tvEstado, findViewById(R.id.btn_permiso_uso));
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_CODE_ENABLE_ADMIN) {
             TextView tvEstado = findViewById(R.id.tv_estado_monitoreo);
-            tvEstado.setText("✅ Monitoreo Activo\nEnviando datos a papá/mamá...");
-            tvEstado.setTextColor(0xFF2E7D32);
+            verificarPermisos(tvEstado, findViewById(R.id.btn_permiso_uso));
+        }
+    }
+
+    private void verificarPermisos(TextView tvEstado, Button btnPermiso) {
+        boolean tieneUso = tienePermisoDeUso();
+        boolean esAdmin = devicePolicyManager.isAdminActive(componentName);
+
+        if (tieneUso && esAdmin) {
+            tvEstado.setText("✅ PROTECCIÓN ACTIVA\nMonitoreo y Anti-desinstalación activados.");
+            tvEstado.setTextColor(0xFF2E7D32); // Verde
+            btnPermiso.setText("Permisos Completos");
+            btnPermiso.setEnabled(false);
+            btnPermiso.setBackgroundColor(0xFF9E9E9E); // Gris
             iniciarServicio();
+        } else if (tieneUso && !esAdmin) {
+            tvEstado.setText("⚠️ Falta permiso de Administrador.\nToca el botón para activar la protección anti-desinstalación.");
+            tvEstado.setTextColor(0xFFFF9800); // Naranja
+            btnPermiso.setText("Activar Protección Admin");
+            btnPermiso.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    activarAdministrador();
+                }
+            });
         }
     }
 
@@ -64,6 +98,13 @@ public class HijoActivity extends Activity {
         AppOpsManager appOps = (AppOpsManager) getSystemService(Context.APP_OPS_SERVICE);
         int mode = appOps.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, android.os.Process.myUid(), getPackageName());
         return mode == AppOpsManager.MODE_ALLOWED;
+    }
+
+    private void activarAdministrador() {
+        Intent intent = new Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN);
+        intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, componentName);
+        intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "Esta protección evita que la app sea desinstalada accidentalmente.");
+        startActivityForResult(intent, REQUEST_CODE_ENABLE_ADMIN);
     }
 
     private void iniciarServicio() {
