@@ -4,96 +4,79 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="20dp"
-    android:background="#F5F5F5">
+    android:background="#F5F5F5"
+    android:gravity="center_horizontal">
 
     <TextView
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Panel de Control"
+        android:text="Panel del Padre"
         android:textSize="24sp"
         android:textStyle="bold"
-        android:textColor="#333333"
-        android:gravity="center"
-        android:layout_marginBottom="20dp" />
+        android:layout_marginBottom="30dp" />
 
-    <!-- Caja para el Código de Familia -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:background="#E3F2FD"
-        android:padding="15dp"
-        android:layout_marginBottom="20dp"
-        android:gravity="center">
+        android:padding="20dp"
+        android:gravity="center"
+        android:layout_marginBottom="20dp">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Código de Familia:"
-            android:textSize="14sp"
-            android:textColor="#555" />
+            android:text="Tu Código de Familia:"
+            android:textSize="16sp" />
 
         <TextView
-            android:id="@+id/tv_codigo_familia"
+            android:id="@+id/tv_codigo"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Genera un código..."
-            android:textSize="32sp"
+            android:text="------"
+            android:textSize="40sp"
             android:textStyle="bold"
             android:textColor="#1565C0"
-            android:layout_marginTop="5dp" />
+            android:layout_margin="10dp" />
 
         <Button
-            android:id="@+id/btn_generar_codigo"
+            android:id="@+id/btn_generar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Generar Nuevo Código"
-            android:layout_marginTop="10dp"
+            android:text="Generar Código"
             android:backgroundTint="#1565C0" />
     </LinearLayout>
 
-    <!-- Tarjeta de información del hijo -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
         android:background="#FFFFFF"
         android:padding="20dp"
-        android:layout_marginBottom="20dp"
-        android:elevation="4dp">
+        android:layout_marginBottom="20dp">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Estado del Dispositivo"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="15dp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="App activa:"
-            android:textSize="14sp"
-            android:textColor="#666666" />
+            android:text="App activa en tablet: "
+            android:textSize="16sp" />
 
         <TextView
             android:id="@+id/tv_app_activa"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Esperando conexión..."
-            android:textSize="20sp"
+            android:text="Esperando..."
+            android:textSize="16sp"
             android:textStyle="bold"
-            android:textColor="#2196F3"
-            android:layout_marginBottom="15dp" />
+            android:textColor="#4CAF50"
+            android:layout_marginLeft="10dp" />
     </LinearLayout>
 
     <Button
-        android:id="@+id/btn_cambiar_rol"
+        android:id="@+id/btn_salir"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Cambiar a Modo Hijo"
-        android:backgroundTint="#9E9E9E"
-        android:textColor="#FFFFFF" />
+        android:text="Cerrar Sesión"
+        android:backgroundTint="#9E9E9E" />
 
 </LinearLayout>
