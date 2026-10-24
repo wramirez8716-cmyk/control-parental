@@ -1,8 +1,6 @@
 package com.controlparental.app;
 
 import android.app.Activity;
-import android.app.AppOpsManager;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -45,7 +43,9 @@ public class HijoActivity extends Activity {
             etCodigo.setText(codigoGuardado);
             etCodigo.setEnabled(false);
             btnConectar.setVisibility(View.GONE);
-            verificarPermisos();
+            tvEstado.setText("✅ Conectado. Activa el permiso de uso.");
+            tvEstado.setTextColor(0xFF2E7D32);
+            btnPermiso.setVisibility(View.VISIBLE);
         }
 
         btnConectar.setOnClickListener(v -> {
@@ -63,7 +63,9 @@ public class HijoActivity extends Activity {
                         Toast.makeText(HijoActivity.this, "¡Conectado!", Toast.LENGTH_LONG).show();
                         etCodigo.setEnabled(false);
                         btnConectar.setVisibility(View.GONE);
-                        verificarPermisos();
+                        tvEstado.setText("✅ Conectado. Activa el permiso de uso.");
+                        tvEstado.setTextColor(0xFF2E7D32);
+                        btnPermiso.setVisibility(View.VISIBLE);
                     } else {
                         Toast.makeText(HijoActivity.this, "Código inválido", Toast.LENGTH_LONG).show();
                     }
@@ -74,7 +76,7 @@ public class HijoActivity extends Activity {
         });
 
         btnPermiso.setOnClickListener(v -> {
-            permisoActivado = true; // Marcar que el usuario intentó activarlo
+            permisoActivado = true;
             Intent intent = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);
             startActivity(intent);
         });
@@ -83,23 +85,12 @@ public class HijoActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        // Si el usuario ya marcó que activó el permiso, asumir que lo hizo
+        // Si el usuario ya fue a activar el permiso, asumir que lo hizo
         if (permisoActivado) {
             tvEstado.setText("✅ Monitoreo Activo\nEnviando datos a papá...");
             tvEstado.setTextColor(0xFF2E7D32);
             btnPermiso.setVisibility(View.GONE);
             startService(new Intent(this, ServicioMonitoreo.class));
-        } else if (!etCodigo.getText().toString().isEmpty()) {
-            verificarPermisos();
-        }
-    }
-
-    private void verificarPermisos() {
-        // Método simplificado: solo verificar si el campo de código no está vacío
-        if (!etCodigo.getText().toString().isEmpty()) {
-            tvEstado.setText("⚠️ Toca el botón y activa 'Control Parental' en la lista.\nLuego regresa aquí.");
-            tvEstado.setTextColor(0xFFFF9800);
-            btnPermiso.setVisibility(View.VISIBLE);
         }
     }
 }
