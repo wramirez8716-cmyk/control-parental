@@ -17,8 +17,8 @@ import java.util.Random;
 
 public class PadreActivity extends Activity {
 
-    private TextView tvCodigo, tvAppActiva;
-    private Button btnGenerar, btnSalir;
+    private TextView tvCodigo, tvAppActiva, tvHistorial;
+    private Button btnGenerar, btnBloquear, btnSalir;
     private DatabaseReference dbRef;
     private String codigoActual = "";
 
@@ -29,7 +29,9 @@ public class PadreActivity extends Activity {
 
         tvCodigo = findViewById(R.id.tv_codigo);
         tvAppActiva = findViewById(R.id.tv_app_activa);
+        tvHistorial = findViewById(R.id.tv_historial); // Nuevo
         btnGenerar = findViewById(R.id.btn_generar);
+        btnBloquear = findViewById(R.id.btn_bloquear); // Nuevo
         btnSalir = findViewById(R.id.btn_salir);
         dbRef = FirebaseDatabase.getInstance().getReference();
 
@@ -50,16 +52,20 @@ public class PadreActivity extends Activity {
             for (int i = 0; i < 6; i++) sb.append(chars.charAt(random.nextInt(chars.length())));
             
             codigoActual = sb.toString();
-            
-            // Guardar en Firebase y Local
             dbRef.child("codigos").child(codigoActual).setValue("activo");
             prefs.edit().putString("codigo_familia", codigoActual).apply();
 
             tvCodigo.setText(codigoActual);
             btnGenerar.setText("Código Activo");
             btnGenerar.setEnabled(false);
-            Toast.makeText(this, "Código generado: " + codigoActual, Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Código: " + codigoActual, Toast.LENGTH_LONG).show();
             escucharDatos();
+        });
+
+        // NUEVO: Botón de Bloqueo
+        btnBloquear.setOnClickListener(v -> {
+            dbRef.child("familias").child(codigoActual).child("orden").setValue("BLOQUEAR");
+            Toast.makeText(this, "¡Orden de bloqueo enviada!", Toast.LENGTH_SHORT).show();
         });
 
         btnSalir.setOnClickListener(v -> {
@@ -69,12 +75,28 @@ public class PadreActivity extends Activity {
     }
 
     private void escucharDatos() {
-        dbRef.child("familias").child(codigoActual).child("app_activa")
-            .addValueEventListener(new ValueEventListener() {
+        DatabaseReference familiaRef = dbRef.child("familias").child(codigoActual);
+        
+        // Escuchar app activa
+        familiaRef.child("app_activa").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
                 String app = snapshot.getValue(String.class);
                 tvAppActiva.setText(app != null ? app : "En espera...");
+            }
+            @Override
+            public void onCancelled(DatabaseError error) {}
+        });
+
+        // NUEVO: Escuchar historial (últimos 5 registros)
+        familiaRef.child("historial").limitToLast(5).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                StringBuilder historialTexto = new StringBuilder("Historial reciente:\n");
+                for (DataSnapshot child : snapshot.getChildren()) {
+                    historialTexto.append("• ").append(child.getValue(String.class)).append("\n");
+                }
+                tvHistorial.setText(historialTexto.toString());
             }
             @Override
             public void onCancelled(DatabaseError error) {}
