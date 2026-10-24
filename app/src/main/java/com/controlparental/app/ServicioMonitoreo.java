@@ -24,7 +24,6 @@ public class ServicioMonitoreo extends Service {
     private UsageStatsManager usageStatsManager;
     private PackageManager packageManager;
     private DatabaseReference databaseReference;
-    private String codigoFamilia = "";
 
     @Override
     public void onCreate() {
@@ -32,57 +31,39 @@ public class ServicioMonitoreo extends Service {
         usageStatsManager = (UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
         packageManager = getPackageManager();
 
-        // Obtener el código de familia guardado
         SharedPreferences prefs = getSharedPreferences("ControlParental", MODE_PRIVATE);
-        codigoFamilia = prefs.getString("codigo_familia", "");
-        
+        String codigoFamilia = prefs.getString("codigo_familia", "");
+
         if (!codigoFamilia.isEmpty()) {
-            databaseReference = FirebaseDatabase.getInstance()
-                .getReference("familias")
-                .child(codigoFamilia);
+            databaseReference = FirebaseDatabase.getInstance().getReference("familias").child(codigoFamilia);
         } else {
-            Log.e("ServicioMonitoreo", "No hay código de familia configurado");
+            stopSelf();
             return;
         }
 
-        // Crear canal de notificación
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(
-                "MONITOREO", "Monitoreo", NotificationManager.IMPORTANCE_LOW);
+            NotificationChannel channel = new NotificationChannel("MONITOREO", "Monitoreo", NotificationManager.IMPORTANCE_LOW);
             NotificationManager manager = getSystemService(NotificationManager.class);
-            if (manager != null) {
-                manager.createNotificationChannel(channel);
-            }
+            if (manager != null) manager.createNotificationChannel(channel);
         }
 
-        // Notificación para mantener el servicio activo
         Notification notification = new Notification.Builder(this, "MONITOREO")
                 .setContentTitle("Control Parental Activo")
-                .setContentText("Monitoreando uso del dispositivo")
+                .setContentText("Protegiendo el dispositivo")
                 .setSmallIcon(android.R.drawable.ic_lock_lock)
                 .setOngoing(true)
                 .build();
                 
-        try {
-            startForeground(1, notification);
-        } catch (Exception e) {
-            Log.e("ServicioMonitoreo", "Error: " + e.getMessage());
-        }
+        startForeground(1, notification);
 
         runnable = new Runnable() {
             @Override
             public void run() {
-                try {
-                    String appActiva = obtenerAppEnPrimerPlano();
-                    if (appActiva != null && databaseReference != null) {
-                        databaseReference.child("app_activa").setValue(appActiva);
-                        databaseReference.child("ultima_actividad").setValue(System.currentTimeMillis());
-                        Log.d("ServicioMonitoreo", "App: " + appActiva);
-                    }
-                } catch (Exception e) {
-                    Log.e("ServicioMonitoreo", "Error: " + e.getMessage());
+                String appActiva = obtenerAppEnPrimerPlano();
+                if (appActiva != null && databaseReference != null) {
+                    databaseReference.child("app_activa").setValue(appActiva);
                 }
-                handler.postDelayed(this, 5000); // Cada 5 segundos
+                handler.postDelayed(this, 5000);
             }
         };
     }
@@ -100,9 +81,7 @@ public class ServicioMonitoreo extends Service {
     }
 
     @Override
-    public IBinder onBind(Intent intent) {
-        return null;
-    }
+    public IBinder onBind(Intent intent) { return null; }
 
     private String obtenerAppEnPrimerPlano() {
         long time = System.currentTimeMillis();
@@ -119,8 +98,7 @@ public class ServicioMonitoreo extends Service {
         
         if (!lastApp.isEmpty()) {
             try {
-                return packageManager.getApplicationLabel(
-                    packageManager.getApplicationInfo(lastApp, 0)).toString();
+                return packageManager.getApplicationLabel(packageManager.getApplicationInfo(lastApp, 0)).toString();
             } catch (PackageManager.NameNotFoundException e) {
                 return lastApp;
             }
