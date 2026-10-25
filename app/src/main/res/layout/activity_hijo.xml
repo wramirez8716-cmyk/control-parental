@@ -1,61 +1,136 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="30dp"
-    android:background="#E3F2FD"
-    android:gravity="center">
+    android:background="#F5F5F5">
 
-    <TextView
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="👦 Modo Hijo"
-        android:textSize="30sp"
-        android:textStyle="bold"
-        android:textColor="#1565C0"
-        android:layout_marginBottom="30dp" />
+        android:orientation="vertical"
+        android:padding="25dp"
+        android:gravity="center_horizontal">
 
-    <EditText
-        android:id="@+id/et_codigo"
-        android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:hint="Ingresa el código de papá"
-        android:textSize="20sp"
-        android:textAlignment="center"
-        android:inputType="textCapCharacters"
-        android:maxLength="6"
-        android:background="#FFFFFF"
-        android:padding="10dp"
-        android:layout_marginBottom="20dp" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="👦 Configuración del Dispositivo"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:textColor="#1565C0"
+            android:gravity="center"
+            android:layout_marginBottom="30dp" />
 
-    <Button
-        android:id="@+id/btn_conectar"
-        android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:text="CONECTAR"
-        android:textSize="18sp"
-        android:backgroundTint="#1565C0"
-        android:textColor="#FFFFFF"
-        android:layout_marginBottom="20dp" />
+        <!-- Paso 1: Código -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#FFFFFF"
+            android:padding="20dp"
+            android:layout_marginBottom="15dp"
+            android:elevation="2dp">
 
-    <TextView
-        android:id="@+id/tv_estado"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Esperando código..."
-        android:textSize="16sp"
-        android:textColor="#666"
-        android:gravity="center"
-        android:layout_marginBottom="20dp" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Paso 1: Vincular con papá/mamá"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="10dp" />
 
-    <Button
-        android:id="@+id/btn_permiso"
-        android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:text="Activar Permiso de Uso"
-        android:backgroundTint="#4CAF50"
-        android:textColor="#FFFFFF"
-        android:visibility="gone" />
+            <EditText
+                android:id="@+id/et_codigo"
+                android:layout_width="match_parent"
+                android:layout_height="55dp"
+                android:hint="Ingresa el código de 6 dígitos"
+                android:textSize="18sp"
+                android:textAlignment="center"
+                android:inputType="textCapCharacters"
+                android:maxLength="6"
+                android:background="#F0F0F0"
+                android:padding="10dp"
+                android:layout_marginBottom="10dp" />
 
-</LinearLayout>
+            <Button
+                android:id="@+id/btn_conectar"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:text="CONECTAR"
+                android:backgroundTint="#1565C0"
+                android:textColor="#FFFFFF" />
+        </LinearLayout>
+
+        <!-- Paso 2: Permisos (Se muestra solo después de conectar) -->
+        <LinearLayout
+            android:id="@+id/layout_permisos"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#FFFFFF"
+            android:padding="20dp"
+            android:layout_marginBottom="15dp"
+            android:elevation="2dp"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Paso 2: Activar Protecciones"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="15dp" />
+
+            <TextView
+                android:id="@+id/tv_estado_permisos"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="⚠️ Falta activar permisos..."
+                android:textSize="15sp"
+                android:textColor="#F44336"
+                android:layout_marginBottom="15dp"
+                android:gravity="center" />
+
+            <Button
+                android:id="@+id/btn_activar_permiso"
+                android:layout_width="match_parent"
+                android:layout_height="55dp"
+                android:text="Activar Permiso Pendiente"
+                android:backgroundTint="#FF9800"
+                android:textColor="#FFFFFF"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Mensaje de Éxito -->
+        <LinearLayout
+            android:id="@+id/layout_exito"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#E8F5E9"
+            android:padding="20dp"
+            android:layout_marginBottom="15dp"
+            android:elevation="2dp"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="✅ ¡DISPOSITIVO 100% PROTEGIDO!"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="#2E7D32"
+                android:gravity="center"
+                android:layout_marginBottom="10dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="El monitoreo está activo y enviando datos en tiempo real."
+                android:textSize="14sp"
+                android:textColor="#333"
+                android:gravity="center" />
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>
